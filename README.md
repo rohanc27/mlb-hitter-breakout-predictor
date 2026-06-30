@@ -1,4 +1,4 @@
-# MLB Breakout Predictor
+# MLB Hitter Breakout Predictor
 
 Predicts whether an MLB batter is likely to have a breakout season (a 2.0+ WAR increase) the following year, based on age, performance level, plate discipline, and year-over-year trend.
 
@@ -82,8 +82,8 @@ A more extreme version of the same effect shows up with Aaron Judge's historic 2
 ## How to run it
 
 ```bash
-git clone https://github.com/rohanc27/mlb-breakout-predictor.git
-cd mlb-breakout-predictor
+git clone https://github.com/rohanc27/mlb-hitter-breakout-predictor.git
+cd mlb-hitter-breakout-predictor
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -108,7 +108,7 @@ streamlit run app/streamlit_app.py
 ## Project structure
 
 ```
-mlb-breakout-predictor/
+mlb-hitter-breakout-predictor/
 ├── src/
 │   ├── data/pull_batting_stats.py     # Baseball-Reference data pull
 │   ├── features/build_features.py     # Labels + leakage-free features
