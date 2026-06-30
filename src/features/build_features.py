@@ -22,7 +22,7 @@ PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 
 WAR_JUMP_THRESHOLD = 2.0
 MIN_PA_NEXT_YEAR = 300
-MIN_PA_CURRENT_YEAR = 100  # filter out tiny-sample current-year rows
+MIN_PA_CURRENT_YEAR = 300  # filter out tiny-sample current-year rows
 
 
 def load_raw(path: Path) -> pd.DataFrame:
