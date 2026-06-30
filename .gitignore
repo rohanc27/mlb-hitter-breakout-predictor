@@ -1,0 +1,34 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Data — too big for git, except small app-serving files
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Models
+models/*
+!models/.gitkeep
+
+# Cache from pybaseball
+.pybaseball_cache/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets
+.env
+*.key
