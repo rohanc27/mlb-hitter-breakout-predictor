@@ -16,7 +16,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import (
     average_precision_score,
     brier_score_loss,
@@ -102,7 +102,10 @@ def main() -> None:
         ("preprocessor", ColumnTransformer([
             ("numeric", StandardScaler(), FEATURES),
         ])),
-        ("classifier", LogisticRegression(
+        ("classifier", LogisticRegressionCV(
+            Cs=[0.01, 0.03, 0.1, 0.3, 1.0, 3.0],
+            cv=5,
+            scoring="average_precision",
             max_iter=1000,
             class_weight="balanced",
             random_state=42,
