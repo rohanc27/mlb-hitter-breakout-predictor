@@ -1,3 +1,42 @@
+# MLB Breakout Predictor
+
+Predicts whether an MLB batter is likely to have a breakout season (a 2.0+ WAR increase) the following year, based on age, performance level, plate discipline, and year-over-year trend.
+
+**Live app:** https://mlb-breakout-predictor-ibmuwtzaru4599qrzxpi.streamlit.app/
+
+![Model comparison](figures/model_comparison.png)
+
+## Goal
+
+Identify batters who are likely to take a meaningful performance leap next season, using only information available through the end of their current season. The target use case: a scout, analyst, or fan wanting a data-driven signal for "who might break out next year" rather than relying on name recognition or media hype.
+
+## Why this project
+
+Most public breakout models either focus on top prospects only, or use vague heuristics ("young player with good plate discipline = breakout candidate"). I wanted to build something that:
+
+1. Uses a precise, falsifiable definition of "breakout" (a specific WAR threshold, not a vibe)
+2. Tests whether a more complex model (XGBoost) actually beats a simple one on this problem, rather than assuming complexity helps
+3. Surfaces real-data edge cases that test the model's reasoning, not just aggregate metrics
+
+## Data
+
+- **Source:** Baseball-Reference, accessed via the `pybaseball` package
+  - `bwar_bat()` for WAR (Baseball-Reference's `war_daily_bat` table — a direct data file, not a scraped page)
+  - `batting_stats_bref(season)` for traditional counting/rate stats, pulled per-season
+- **Span:** 2015-2024, batters only
+- **Filtering:** Minimum 300 plate appearances in a season, to exclude injury-shortened, platoon, or late-callup seasons where small-sample rate stats are unreliable predictors
+
+I originally used FanGraphs via `pybaseball.batting_stats()`, but FanGraphs actively blocks this scraper (HTTP 403) — a known, long-standing, unresolved issue in the library. Baseball-Reference's data file-based functions proved more reliable.
+
+## Breakout definition
+
+For a player in season N:
+
+```
+breakout = 1  if  player is qualified (300+ PA) in season N+1
+             AND  WAR(N+1) - WAR(N) >= 2.0
+```
+
 This is a **relative, not absolute** definition — it captures *improvement*, not just "good player." A player coming off an elite season is correctly predicted as unlikely to break out again, simply because there's less room to climb further (see Results below for a concrete example).
 
 ## Features
@@ -38,6 +77,8 @@ The model meaningfully separates real breakout seasons from non-breakout seasons
 
 Adam Eaton's 2016 season (6.7 WAR, up from 4.1 the year before — already a real breakout) gets a predicted 2017 breakout probability of only 12.8%, barely above the 6.5% league base rate. This isn't a model error: jumping by another 2.0+ WAR from an already-elite level is rare for any player. The model has correctly learned that recent improvement and current elite performance pull the prediction in opposite directions — recent positive trend raises the probability, but a high current WAR lowers it, since there's less room left to climb.
 
+A more extreme version of the same effect shows up with Aaron Judge's historic 2024 season (10.9 WAR): the model predicts only a 0.8% breakout probability for 2025, well below the 6.5% league base rate, despite a strong positive trend from the year before. There is essentially no realistic room for another 2.0+ WAR jump from one of the best offensive seasons in modern baseball.
+
 ## How to run it
 
 ```bash
@@ -65,3 +106,28 @@ streamlit run app/streamlit_app.py
 ```
 
 ## Project structure
+
+```
+mlb-breakout-predictor/
+├── src/
+│   ├── data/pull_batting_stats.py     # Baseball-Reference data pull
+│   ├── features/build_features.py     # Labels + leakage-free features
+│   └── models/
+│       ├── train_logreg.py
+│       └── train_xgb.py
+├── scripts/
+│   ├── predict.py                     # CLI prediction tool
+│   └── make_readme_figures.py
+├── app/
+│   └── streamlit_app.py               # Interactive web app
+├── data/processed/breakout_features.parquet
+├── models/logreg.joblib               # Production model
+└── figures/
+```
+
+## Limitations
+
+- Sample size is modest (~500 training rows, ~70 positive examples) — a real constraint on how much signal any model can extract
+- No fielding/defensive value beyond what's baked into WAR itself
+- No injury, trade context, or coaching-change signals, which can meaningfully affect breakout likelihood
+- The 300 PA cutoff excludes some legitimate partial-season breakouts (e.g., a strong rookie call-up)
